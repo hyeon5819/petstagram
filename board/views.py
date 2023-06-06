@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 def create_feed_view(request):
-    #게시글 작성
+    # 게시글 작성
     if request.method == 'GET':
         user = request.user.is_authenticated
         # 유저가 로그인 됐는지 확인
@@ -18,17 +18,17 @@ def create_feed_view(request):
             # 유저가 로그인 하지 않았을 때
             return redirect('/login')
     elif request.method == 'POST':      # 사용자가 post 버튼을 눌러 게시를 했을지 실행됨
-        user = request.user # 게시글 작성시 필요해서 추가
+        user = request.user  # 게시글 작성시 필요해서 추가
         post = Post()
 
-        post.author = user # 게시글 작성시 필요해서 추가
-        #작성자 입력 란
-        post.title = request.POST.get('title','')
-        post.content = request.POST.get('user-content','')
+        post.author = user  # 게시글 작성시 필요해서 추가
+        # 작성자 입력 란
+        post.title = request.POST.get('title', '')
+        post.content = request.POST.get('user-content', '')
         post.save()
 
         # return HttpResponse('create_feed_view_POST')
-        
+
         # 작성 후 main으로 이동
         return redirect('/')
 
@@ -70,20 +70,25 @@ def post_comment(request, id):
         user_id = request.user.id
         post = Post.objects.get(id=id)
         author = UserModel.objects.get(id=user_id)
-        post_comments = PostComment.objects.filter(post=post)
 
-
-        post_comment = PostComment(post=post, author=author, content=post_comment_content)
+        post_comment = PostComment(
+            post=post, author=author, content=post_comment_content)
         post_comment.save()
-        post.comment_count += 1
+
+        # 댓글개수
+        # 댓글이 생성되면
+        # post.comment_count += 1
+        # post.save()
+
+        post_comments = Post.objects.get(id=id).comments.all()
+        post.comment_count = len(post_comments)
         post.save()
+        print(PostComment.objects.get(id=22))
+        print(PostComment.objects.get(id=22).post)
+        print(post_comment.post)
 
-        # num_comments = len(post_comments)
-
-        # return redirect('/detailpost/'+str(id))
         return render(request, 'detailpost/post_detail.html', {'post': post,
                                                                'post_comments': post_comments,
-                                                               # 'num_comments': num_comments,
                                                                })
 
 
@@ -91,15 +96,17 @@ def post_comment(request, id):
 @login_required
 def post_comment_delete(request, id):
     post_comment = PostComment.objects.get(id=id)
-    post_comment.delete()
     post = Post.objects.get(id=post_comment.post.id)
-    post.comment_count -= 1
-    post.save()
     post_comments = PostComment.objects.filter(post=post)
 
+    if request.user == post_comment.author or request.user == post_comment.post.author:
+        post_comment.delete()
+        post.comment_count = len(post_comments)
+        post.save()
+
     return render(request, 'detailpost/post_detail.html',
-                          {'post': post, 'post_comments': post_comments,
-                           })
+                  {'post': post, 'post_comments': post_comments,
+                   })
 
 
 # 댓글 수정

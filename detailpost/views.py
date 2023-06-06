@@ -14,9 +14,9 @@ def detail_post(request, id):
     # num_comments = len(post_comments)
 
     return render(request, 'detailpost/post_detail.html',
-                      {'post': post, 'post_comments': post_comments,
-                       # 'num_comments': num_comments,
-                       })
+                  {'post': post, 'post_comments': post_comments,
+                   # 'num_comments': num_comments,
+                   })
 
 
 @login_required()
@@ -34,9 +34,9 @@ def update_post(request, id):
         post.content = request.POST['content']
 
         post.save()
-        return render(request,'detailpost/post_detail.html',{'post':post})
+        return render(request, 'detailpost/post_detail.html', {'post': post})
     else:
-        return render(request,'detailpost/update.html',{'post':post})
+        return render(request, 'detailpost/update.html', {'post': post})
 
 
 # # 댓글 좋아요 기능 미구현
